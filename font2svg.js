@@ -23,6 +23,10 @@ for(let i=0; i<fonts.length; i++) {
 	let outputFileName = path.join(outputFolder,`${font.familyName}.svg`);
 	let wstream = fs.createWriteStream(outputFileName);
 
+	
+	if(typeof(font.fonts) != 'undefined') {
+		font = font.fonts[0];
+	}
 
 
 	let fontFace = `
