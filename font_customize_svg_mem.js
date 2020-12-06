@@ -66,20 +66,30 @@ let fonts = {
 		adjustive: [
 			{
 				//fontName: '../fonts/HanaMinA.ttf',
-				fontName: '../fonts/I.MingCREATXR.ttf',
+				fontName: '../fonts/I.MingCREATXR_700.ttf',
+				//chars: '☉「」『』'
 				chars: '☉'
 			},
 
 			{
-				fontName: '../fonts/I.MingCREATXR.ttf',
+				//fontName: '../fonts/HanaMinA.ttf',
+				fontName: '../fonts/I.MingCREATXR_700.ttf',
+				//由於一點明體有1-10與11-50的大小不一，所以更改。
+				//黑底白字的未改❶❷❸❹❺❻❼❽❾❿➊➋➌➍➎➏➐➑➒➓⓫⓬⓭⓮⓯⓰⓱⓲⓳⓴
+				//白底黑字的將➊➋➌➍➎➏➐➑➒➓⓫⓬⓭⓮⓯⓰⓱⓲⓳⓴字體大小統一，小號的不改
+				chars: '➀➁➂➃➄➅➆➇➈➉⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘㉙㉚㉛㉜㉝㉞㉟㊱㊲㊳㊴㊵㊶㊷㊸㊹㊺㊻㊼㊽㊾㊿'
+			},
+
+			{
+				fontName: '../fonts/I.MingCREATXR_700.ttf',
 				chars: '0123456789`~!@#$%^&*{}[]()_+=-.,:;?<>|/\'\\ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 			},
 			{
-				fontName: '../fonts/I.MingCREATXR.ttf',
+				fontName: '../fonts/I.MingCREATXR_700.ttf',
 				chars: '﹐﹑﹔﹕﹖﹗﹙﹚﹛﹜﹝﹞﹟﹠﹡﹢﹣﹤﹥﹦﹨﹩﹪﹫'
 			},
 			{
-				fontName: '../fonts/I.MingCREATXR.ttf',
+				fontName: '../fonts/I.MingCREATXR_700.ttf',
 				chars: '。，、。；：？！（）｛｝〔〕＃＆＊＋－＜＞＝＼＄％＠《》〈〉／［］「」『』‘’“”气磙碌'
 			},
 
