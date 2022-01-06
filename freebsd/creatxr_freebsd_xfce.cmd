@@ -2,7 +2,7 @@
 
 
 
-### it's freebsd customsized setup script. it could run on "sh" now. 
+### it's freebsd customsized setup script. it could run on "sh" now.
 ### it setup xfce, dual video card (nvidia and intel), cjk fonts, fcitx5, firefox and chromium.
 ### (fcitx5 may miss some env settings. install zh-ibus-rime and then remove ibus and re-login, it works.)
 ### i perfer modify "/usr/local/share/rime-data/default.yaml" to use " - schema: wubi_trad".
@@ -18,6 +18,11 @@
 # https://www.debian.org/releases/jessie/amd64/ch04s03.html.en
 # cp debian.iso /dev/sdX
 # sync
+### https://www.freebsd.org/releases/13.0R/announce/
+# on debian/ubuntu
+# Be careful to make sure you get the target (of=) correct.
+# dd if=FreeBSD-13.0-RELEASE-amd64-bootonly.iso of=/dev/sdb bs=1m conv=sync
+
 
 ### 必須要有一個 freebsd-boot 分區（類型），而且必須是 512KB 大小。
 ### must have a patition of freebsd-boot with size 512KB only.
@@ -84,20 +89,23 @@ pkg install -y firefox
 ## shared memory support must be enabled to run chromium
 pkg install -y chromium
 sysctl kern.ipc.shm_allow_removed=1
-#pkg install -y libreoffice gimp thunderbird vlc
+#pkg install -y libreoffice gimp vlc
+#pkg install -y thunderbird
+#pkg install -y p7zip p7zip-codec-rar xarchiver
 
 
 
 ## 安裝 nvidia 的驅動以驅動雙顯卡
 ## 查看顯卡 pciconf -lv | grep -A 4 vgapci
-## 需混和驅動 X11/nvidia-hybrid-graphics
+## 需混和驅動 nvidia-hybrid-graphics
 ## Driver 應該設成 "modesetting"
 ## 需 drm-fbsd13-kmod
 ## kld_list 中要包含 "linux nvidia-modeset i915kms"
 ## 啓用 linux_enable
 ### 不能使用 cannot use "pkg install -y X11/nvidia-hybrid-graphics"
 
-pkg install -y nvidia-hybrid-graphics-0.5
+#pkg install -y nvidia-hybrid-graphics-0.5
+pkg install -y nvidia-hybrid-graphics
 pkg install -y drm-fbsd13-kmod
 #For amdgpu: kld_list="amdgpu"
 #For Intel: kld_list="i915kms"
@@ -109,7 +117,7 @@ sysrc kld_list+=linux
 sysrc kld_list+=nvidia-modeset
 sysrc kld_list+=i915kms
 sysrc linux_enable=yes
-sysrc nvidia_xorg_enable=YES
+sysrc nvidia_xorg_enable=yes
 #service nvidia_xorg start
 
 
@@ -119,10 +127,12 @@ sysrc nvidia_xorg_enable=YES
 
 XORG_CONF_FILE_NAME='/usr/local/etc/X11/xorg.conf.d/driver-nvidia.conf'
 
+#some said "modesetting" is for intel card, "nvidia" is for nvidia card. so, i modified it. after reboot, i compared the two configs "glxinfo". it's the same.
+
 echo 'Section "Device"' | tee -a ${XORG_CONF_FILE_NAME}
 echo '    Identifier "Card0"' | tee -a ${XORG_CONF_FILE_NAME}
 echo '    VendorName "NVIDIA Corporation"' | tee -a ${XORG_CONF_FILE_NAME}
-echo '    Driver "modesetting"' | tee -a ${XORG_CONF_FILE_NAME}
+echo '    Driver "nvidia"' | tee -a ${XORG_CONF_FILE_NAME}
 echo '    BusID "PCI:1:0:0"' | tee -a ${XORG_CONF_FILE_NAME}
 echo 'EndSection' | tee -a ${XORG_CONF_FILE_NAME}
 echo '' | tee -a ${XORG_CONF_FILE_NAME}
@@ -130,19 +140,11 @@ echo '' | tee -a ${XORG_CONF_FILE_NAME}
 echo '' | tee -a ${XORG_CONF_FILE_NAME}
 
 echo 'Section "Device"' | tee -a ${XORG_CONF_FILE_NAME}
-echo '    Identifier "card1"' | tee -a ${XORG_CONF_FILE_NAME}
+echo '    Identifier "Card1"' | tee -a ${XORG_CONF_FILE_NAME}
 echo '    VendorName "Intel Corporation"' | tee -a ${XORG_CONF_FILE_NAME}
-echo '    Driver "scfb"' | tee -a ${XORG_CONF_FILE_NAME}
+echo '    Driver "modesetting"' | tee -a ${XORG_CONF_FILE_NAME}
 echo '    BusID "PCI:0:2:0"' | tee -a ${XORG_CONF_FILE_NAME}
 echo '    Option "DPMS"' | tee -a ${XORG_CONF_FILE_NAME}
-echo 'EndSection' | tee -a ${XORG_CONF_FILE_NAME}
-echo '' | tee -a ${XORG_CONF_FILE_NAME}
-echo '' | tee -a ${XORG_CONF_FILE_NAME}
-echo '' | tee -a ${XORG_CONF_FILE_NAME}
-
-echo 'Section "Screen"' | tee -a ${XORG_CONF_FILE_NAME}
-echo '    Identifier "Screen0"' | tee -a ${XORG_CONF_FILE_NAME}
-echo '    Device "Card0"' | tee -a ${XORG_CONF_FILE_NAME}
 echo 'EndSection' | tee -a ${XORG_CONF_FILE_NAME}
 echo '' | tee -a ${XORG_CONF_FILE_NAME}
 echo '' | tee -a ${XORG_CONF_FILE_NAME}
@@ -155,6 +157,51 @@ echo 'EndSection' | tee -a ${XORG_CONF_FILE_NAME}
 echo '' | tee -a ${XORG_CONF_FILE_NAME}
 echo '' | tee -a ${XORG_CONF_FILE_NAME}
 echo '' | tee -a ${XORG_CONF_FILE_NAME}
+
+echo 'Section "Screen"' | tee -a ${XORG_CONF_FILE_NAME}
+echo '    Identifier "Screen1"' | tee -a ${XORG_CONF_FILE_NAME}
+echo '    Device "Card1"' | tee -a ${XORG_CONF_FILE_NAME}
+echo 'EndSection' | tee -a ${XORG_CONF_FILE_NAME}
+echo '' | tee -a ${XORG_CONF_FILE_NAME}
+echo '' | tee -a ${XORG_CONF_FILE_NAME}
+echo '' | tee -a ${XORG_CONF_FILE_NAME}
+
+#echo 'Section "Device"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '    Identifier "Card0"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '    VendorName "NVIDIA Corporation"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '    Driver "modesetting"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '    BusID "PCI:1:0:0"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo 'EndSection' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '' | tee -a ${XORG_CONF_FILE_NAME}
+
+#echo 'Section "Device"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '    Identifier "Card1"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '    VendorName "Intel Corporation"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '    Driver "scfb"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '    BusID "PCI:0:2:0"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '    Option "DPMS"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo 'EndSection' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '' | tee -a ${XORG_CONF_FILE_NAME}
+
+#echo 'Section "Screen"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '    Identifier "Screen0"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '    Device "Card0"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo 'EndSection' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '' | tee -a ${XORG_CONF_FILE_NAME}
+
+#echo 'Section "Screen"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '    Identifier "Screen1"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '    Device "Card0"' | tee -a ${XORG_CONF_FILE_NAME}
+#echo 'EndSection' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '' | tee -a ${XORG_CONF_FILE_NAME}
+#echo '' | tee -a ${XORG_CONF_FILE_NAME}
 
 
 ## create /usr/local/etc/X11/xorg.conf.d/driver-scfb.conf
@@ -206,7 +253,7 @@ sysrc fusefs_enable=yes
 
 ### for user mount, thunar could mount but cannot umount. so, just add user to umount's group or chmod permissions of umount.
 ### but it has a bug now, it will cause huge cpu occupy.
- 
+
 
 
 
