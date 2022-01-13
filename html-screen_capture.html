@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>capture</title>
+</head>
+<body>
+<div id="err"></div>
+<div id="msg"></div>
+<input type="checkbox" id="recordBx">record
+<button id="startBtn" async>startCapture</button>
+<button id="stopBtn">stopCapture</button>
+<br>
+ffmpeg -video_size 1024x768 -framerate 25 -f x11grab -i :0.0+100,200 output.mp4
+<br>
+https://trac.ffmpeg.org/wiki/Capture/Desktop
+<br>
+<table border="1">
+<tr>
+<td width="25%"><video id="video" autoplay></video></td>
+</tr>
+</table>
+</body>
+</html>
+
+
+
+<script>
+window.onerror = function errorHandler(msg,url,line) {
+	$('#err').append(line + ' : ' + url + ' : ' + msg);
+	//console.log(arguments);
+	return false;
+}
+</script>
+
+
+
+<script>
+const videoElem = document.getElementById('video');
+let mediaRecorder = null;
+let recordedBlobs = [];
+
+let displayMediaOptions = {
+	video: {
+		cursor: "always",
+		displaySurface: "browser"
+	},
+	audio: false
+};
+
+
+async function startCapture(displayMediaOptions) {
+  let captureStream = null;
+//  try {
+    captureStream = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+/*
+  } catch(err) {
+    console.error("Error: " + err);
+  }
+  */
+  //return captureStream;
+
+//  $('#msg').append(captureStream.MediaStreamConstraints);
+  videoElem.srcObject = captureStream;
+//videoElem.srcObject = $('#showing').captureStream();
+
+
+	if(document.getElementById('recordBx').checked) {
+		//不支持 {mimeType: 'video/mp4'}
+		mediaRecorder = new MediaRecorder(captureStream,  {mimeType: 'video/webm'});
+		recordedBlobs = [];
+
+		mediaRecorder.ondataavailable = function (event) {
+			if (event.data && event.data.size > 0) {
+				recordedBlobs.push(event.data);
+			}
+		}
+
+		mediaRecorder.onstop = function (event) {
+			const blob = new Blob(recordedBlobs, {type: 'video/mp4'});
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.style.display = 'none';
+			a.href = url;
+			a.download = 'download.mp4';
+			document.body.appendChild(a);
+			a.click();
+			window.URL.revokeObjectURL(url);
+		}
+
+		mediaRecorder.start(Number.MAX_SAFE_INTEGER);
+	}
+}
+
+function stopCapture(evt) {
+  let tracks = videoElem.srcObject.getTracks();
+
+  tracks.forEach(track => track.stop());
+  videoElem.srcObject = null;
+
+  if(mediaRecorder!=null)  mediaRecorder.stop();
+}
+
+//$('#startBtn').on('click', startCapture);
+//$('#stopBtn').on('click', stopCapture);
+
+
+/**
+ * document.querySelector('#startBtn').addEventListener('click', startCapture);
+ */
+document.getElementById('startBtn').addEventListener('click', startCapture);
+document.getElementById('stopBtn').addEventListener('click', stopCapture);
+
+
+</script>
+
+
