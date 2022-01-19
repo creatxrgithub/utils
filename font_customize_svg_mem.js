@@ -14,8 +14,9 @@ const pathUtil = require('svgpath');
 const svgPathBounds = require('svg-path-bounds');
 
 
-let defFontName = 'I.MingCREATXR';
-let defFontVersion = '700';
+//let defFontName = 'I.MingCREATXR';
+let defFontName = 'CREATXR_MING_MONO_思文明體等寬';
+let defFontVersion = '701';  //i.ming + tlwg mono
 let maxGlyphNum = 65535;  //字形總數不能超過 65535 需減去自行增加的字形數
 
 let svgString='';
@@ -56,24 +57,30 @@ let ranges = [
 /**
  * config your fonts here
  */
+let FontCreatxrOld = '/media/creatxr/DATAL/SOFTS/fonts/I.MingCREATXR_700.ttf';
+let FontMing = '/media/creatxr/DATAL/SOFTS/fonts/I.MingCP-7.01.ttf';
+let FontHanaMinA = '/media/creatxr/DATAL/SOFTS/fonts/HanaMinA.ttf';
+let FontHanaMinB = '/media/creatxr/DATAL/SOFTS/fonts/HanaMinB.ttf';
+let FontKaiXinSong = '/media/creatxr/DATAL/SOFTS/fonts/KaiXinSong.ttf';
+let FontMono = '/usr/share/fonts/truetype/tlwg/TlwgMono.ttf';
 let fonts = {
-		base: '../fonts/I.MingCP-7.00.ttf',
+		base: FontMing,
 		ext: [
-			'../fonts/HanaMinA.ttf',
-			'../fonts/HanaMinB.ttf',
-			'../fonts/KaiXinSong.ttf'
+			FontHanaMinA,
+			FontHanaMinB,
+			FontKaiXinSong
 		],  ///maybe require large heap size: node --max-old-space-size=8192 fontCustomize.js
 		adjustive: [
 			{
 				//fontName: '../fonts/HanaMinA.ttf',
-				fontName: '../fonts/I.MingCREATXR_700.ttf',
+				fontName: FontCreatxrOld,
 				//chars: '☉「」『』'
 				chars: '☉'
 			},
 
 			{
 				//fontName: '../fonts/HanaMinA.ttf',
-				fontName: '../fonts/I.MingCREATXR_700.ttf',
+				fontName: FontCreatxrOld,
 				//由於一點明體有1-10與11-50的大小不一，所以更改。
 				//黑底白字的未改❶❷❸❹❺❻❼❽❾❿➊➋➌➍➎➏➐➑➒➓⓫⓬⓭⓮⓯⓰⓱⓲⓳⓴
 				//白底黑字的將➊➋➌➍➎➏➐➑➒➓⓫⓬⓭⓮⓯⓰⓱⓲⓳⓴字體大小統一，小號的不改
@@ -81,20 +88,24 @@ let fonts = {
 			},
 
 			{
-				fontName: '../fonts/I.MingCREATXR_700.ttf',
+				//改用等寬字體 tlwg mono
+				//fontName: '../fonts/I.MingCREATXR_700.ttf',
+				fontName: FontMono,
+				//半角字符源自某種纖細的黑體
 				chars: '0123456789`~!@#$%^&*{}[]()_+=-.,:;?<>|/\'\\ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 			},
 			{
-				fontName: '../fonts/I.MingCREATXR_700.ttf',
+				fontName: FontCreatxrOld,
+				//源自開心宋體
 				chars: '﹐﹑﹔﹕﹖﹗﹙﹚﹛﹜﹝﹞﹟﹠﹡﹢﹣﹤﹥﹦﹨﹩﹪﹫'
 			},
 			{
-				fontName: '../fonts/I.MingCREATXR_700.ttf',
+				fontName: FontCreatxrOld,
 				chars: '。，、。；：？！（）｛｝〔〕＃＆＊＋－＜＞＝＼＄％＠《》〈〉／［］「」『』‘’“”气磙碌'
 			},
 
 			{
-				fontName: '../fonts/I.MingCREATXR.ttf',
+				fontName: FontCreatxrOld,
 				chars: '◯☯⚊⚋⚌⚍⚎⚏☰☱☲☳☴☵☶☷䷀䷁䷂䷃䷄䷅䷆䷇䷈䷉䷊䷋䷌䷍䷎䷏䷐䷑䷒䷓䷔䷕䷖䷗䷘䷙䷚䷛䷜䷝䷞䷟䷠䷡䷢䷣䷤䷥䷦䷧䷨䷩䷪䷫䷬䷭䷮䷯䷰䷱䷲䷳䷴䷵䷶䷷䷸䷹䷺䷻䷼䷽䷾䷿𝌀𝌁𝌂𝌃𝌄𝌅𝌆𝌇𝌈𝌉𝌊𝌋𝌌𝌍𝌎𝌏𝌐𝌑𝌒𝌓𝌔𝌕𝌖𝌗𝌘𝌙𝌚𝌛𝌜𝌝𝌞𝌟𝌠𝌡𝌢𝌣𝌤𝌥𝌦𝌧𝌨𝌩𝌪𝌫𝌬𝌭𝌮𝌯𝌰𝌱𝌲𝌳𝌴𝌵𝌶𝌷𝌸𝌹𝌺𝌻𝌼𝌽𝌾𝌿𝍀𝍁𝍂𝍃𝍄𝍅𝍆𝍇𝍈𝍉𝍊𝍋𝍌𝍍𝍎𝍏𝍐𝍑𝍒𝍓𝍔𝍕𝍖○ㄨ礻㗰𠳝'
 				//'◯☯⚊⚋⚌⚍⚎⚏☰☱☲☳☴☵☶☷䷀䷁䷂䷃䷄䷅䷆䷇䷈䷉䷊䷋䷌䷍䷎䷏䷐䷑䷒䷓䷔䷕䷖䷗䷘䷙䷚䷛䷜䷝䷞䷟䷠䷡䷢䷣䷤䷥䷦䷧䷨䷩䷪䷫䷬䷭䷮䷯䷰䷱䷲䷳䷴䷵䷶䷷䷸䷹䷺䷻䷼䷽䷾䷿𝌀𝌁𝌂𝌃𝌄𝌅𝌆𝌇𝌈𝌉𝌊𝌋𝌌𝌍𝌎𝌏𝌐𝌑𝌒𝌓𝌔𝌕𝌖𝌗𝌘𝌙𝌚𝌛𝌜𝌝𝌞𝌟𝌠𝌡𝌢𝌣𝌤𝌥𝌦𝌧𝌨𝌩𝌪𝌫𝌬𝌭𝌮𝌯𝌰𝌱𝌲𝌳𝌴𝌵𝌶𝌷𝌸𝌹𝌺𝌻𝌼𝌽𝌾𝌿𝍀𝍁𝍂𝍃𝍄𝍅𝍆𝍇𝍈𝍉𝍊𝍋𝍌𝍍𝍎𝍏𝍐𝍑𝍒𝍓𝍔𝍕𝍖○ㄨ
 			},
@@ -107,15 +118,16 @@ let fonts = {
 
 			//*
 			{
-				fontName: '../fonts/KaiXinSong.ttf',
-				//chars: '旣卽'
+				fontName: FontCreatxrOld,
+				//chars: '旣卽' // 源自開心宋體
 				chars: ''  //「」字，在 ctext.org 中檢測爲自定義字符，當用「䥇」
 			}
 			//*/
 		],
 		alternative: [
 			{
-				fontName: '../fonts/KaiXinSong.ttf',
+				//fontName: '/media/creatxr/DATAL/SOFTS/fonts/KaiXinSong.ttf',
+				fontName: FontKaiXinSong,
 				charsFrom: '﹨',
 				charsTo: '／',
 				rotate: 0,
@@ -124,7 +136,7 @@ let fonts = {
 			}  /*,
 
 			{
-				fontName: '../fonts/KaiXinSong.ttf',
+				fontName: FontKaiXinSong,
 				charsFrom: '﹤﹥',
 				charsTo: '＜＞',
 				rotate: 0,
