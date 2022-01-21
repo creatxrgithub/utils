@@ -1,3 +1,5 @@
+'use strict'
+
 /**
  * npm install fontkit svgpath svg-path-bounds
  *
@@ -17,7 +19,7 @@ const svgPathBounds = require('svg-path-bounds');
 //let defFontName = 'I.MingCREATXR';
 let defFontName = 'CREATXR_MING_MONO_思文明體等寬';
 let defFontVersion = '701';  //i.ming + tlwg mono
-let maxGlyphNum = 65535;  //字形總數不能超過 65535 需減去自行增加的字形數
+let maxGlyphNum = 65533;  //字形總數不能超過 65535 需減去自行增加的字形數
 
 let svgString='';
 
@@ -31,7 +33,8 @@ let missingUnicode = [];
  * define unicode ranges
  */
 let ranges = [
-	{start:32, end:255},
+//	{start:32, end:255},  // 32 = 0x20 是空格，應佔半個字符 baseUnitsPerEm/2
+	{start:33, end:255},
 	{start:0x2F00, end:0x2FD5},  //康熙部首
 	{start:0x2E80, end:0x2EF3},  //部首擴展
 	{start:0xF900, end:0xFAD9},  //兼容漢字
@@ -62,7 +65,15 @@ let FontMing = '/media/creatxr/DATAL/SOFTS/fonts/I.MingCP-7.01.ttf';
 let FontHanaMinA = '/media/creatxr/DATAL/SOFTS/fonts/HanaMinA.ttf';
 let FontHanaMinB = '/media/creatxr/DATAL/SOFTS/fonts/HanaMinB.ttf';
 let FontKaiXinSong = '/media/creatxr/DATAL/SOFTS/fonts/KaiXinSong.ttf';
+// TlwgMono.ttf 還是差些意思：不是黑體，兩字母不等寬於一全角漢字，需要作個轉換
+//或找個合適的字體，比如 Anonymous_Pro.ttf 直接設一個屬性 horiz-adv-x
 let FontMono = '/usr/share/fonts/truetype/tlwg/TlwgMono.ttf';
+//FontMono = '/usr/share/fonts/truetype/tlwg/TlwgMono-Bold.ttf';
+//FontMono = '/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf';
+//FontMono = FontCreatxrOld;
+FontMono = '/media/creatxr/DATAL/SOFTS/fonts/Anonymous-Pro/Anonymous_Pro.ttf';
+
+
 let fonts = {
 		base: FontMing,
 		ext: [
@@ -88,17 +99,29 @@ let fonts = {
 			},
 
 			{
-				//改用等寬字體 tlwg mono
+				//改用等寬字體
 				//fontName: '../fonts/I.MingCREATXR_700.ttf',
 				fontName: FontMono,
 				//半角字符源自某種纖細的黑體
-				chars: '0123456789`~!@#$%^&*{}[]()_+=-.,:;?<>|/\'\\ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+				//空格也要改
+				chars: '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſƒǼǽǾǿȘșȚțˆˇ˘˙˚˛˜˝΄΅ΆΈΉΊΌΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώЁЂЃЄЅІЇЈЉЊЋЌЎЏАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюяёђѓєѕіїјљњћќўџҐґḂḃḊḋḞḟṀṁṖṗṠṡṪṫẀẁẂẃẄẅỲỳ–—―‘’‚“”„†‡•…‰‹›⁄€№™Ω∂∆∏∑−√∞∫≈≠≤≥⌃⌘⌤⌥⌦⍽⎈⏎␣─│┌┐└┘├┤┬┴┼═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬◆◊✓',
+				horizAdvX: 1024
 			},
+/*
+			{
+				//改用等寬字體
+				//fontName: '../fonts/I.MingCREATXR_700.ttf',
+				fontName: FontCreatxrOld,
+				chars: '0123456789`~!@#$%^&*{}[]()_+=-.,:;?<>|/\'\\ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+				//horizAdvX: 1024  //如果需要等寬，則在這設定寬度
+			},
+//*/
 			{
 				fontName: FontCreatxrOld,
 				//源自開心宋體
 				chars: '﹐﹑﹔﹕﹖﹗﹙﹚﹛﹜﹝﹞﹟﹠﹡﹢﹣﹤﹥﹦﹨﹩﹪﹫'
 			},
+
 			{
 				fontName: FontCreatxrOld,
 				chars: '。，、。；：？！（）｛｝〔〕＃＆＊＋－＜＞＝＼＄％＠《》〈〉／［］「」『』‘’“”气磙碌'
@@ -149,10 +172,10 @@ let fonts = {
 
 /*這樣保證總字形不多于 65535*/
 //*
-for(let o of fonts.adjustive) {
+for (let o of fonts.adjustive) {
 	maxGlyphNum -= o.chars.length;
 }
-for(let o of fonts.alternative) {
+for (let o of fonts.alternative) {
 	maxGlyphNum -= o.charsFrom.length;
 }
 //console.log(Object.entries(fonts.adjustive).length);
@@ -168,11 +191,16 @@ function matrixMirrorY(d) {
 	return pathUtil(d).translate(-right-left,0).scale(-1,1).rel().round(3).toString();
 }
 
+//三半角等於兩全角，或二半角等於一全角，卽可對齊中文與字母，或直接設一個屬性 horiz-adv-x
+function matrixScaleWidth(d, percent) {
+	let [left, top, right, bottom] = svgPathBounds(d);
+	return pathUtil(d).scale(percent,1).rel().round(3).toString();  ///TODO:
+}
 
 
 
 
-if(fonts.base!=null) {
+if (fonts.base!=null) {
 
 	let font = fontkit.openSync(fonts.base);
 	baseUnitsPerEm = font.unitsPerEm;
@@ -217,16 +245,17 @@ if(fonts.base!=null) {
 		${fontFace}
 	<missing-glyph
 	d="M1843 -205h-1638v1966h1638v-1966zM1669 1655h-1288l645 -793zM1737 -16v1585l-643 -793zM957 776l-646 797v-1591zM1667 -98l-641 790l-643 -790h1284z" />
+	<glyph glyph-name="&#x20;" unicode="&#x20;" d="" horiz-adv-x="${baseUnitsPerEm/2}"/>
 	`;
 
-	for(let range of ranges) {
-		if(maxGlyphNum==0) break;
-		for(let unicode=range.start; unicode<=range.end; unicode++) {
-			if(maxGlyphNum==0) break;
-			if(font.hasGlyphForCodePoint(unicode)) {
+	for (let range of ranges) {
+		if (maxGlyphNum==0) break;
+		for (let unicode=range.start; unicode<=range.end; unicode++) {
+			if (maxGlyphNum==0) break;
+			if (font.hasGlyphForCodePoint(unicode)) {
 				let glyph = font.glyphForCodePoint(unicode);
 				let unicodeStr = unicode.toString(16).toUpperCase();
-				if(font.unitsPerEm===glyph.advanceWidth) {
+				if (font.unitsPerEm===glyph.advanceWidth) {
 					svgString = svgString.concat(`<glyph glyph-name="&#x${unicodeStr};" unicode="&#x${unicodeStr};" d="${glyph.path.toSVG()}" />\n`);
 				} else {
 					svgString = svgString.concat(`<glyph glyph-name="&#x${unicodeStr};" unicode="&#x${unicodeStr};" d="${glyph.path.toSVG()}" horiz-adv-x="${glyph.advanceWidth}"/>\n`);
@@ -246,19 +275,19 @@ if(fonts.base!=null) {
 
 console.log('ext fonts begin ......');
 
-if(fonts.ext.length>0 && missingUnicode.length>0) {
-	for(let i=0; i<fonts.ext.length; i++) {
-		if(maxGlyphNum==0) break;
+if (fonts.ext.length>0 && missingUnicode.length>0) {
+	for (let i=0; i<fonts.ext.length; i++) {
+		if (maxGlyphNum==0) break;
 		let extFont = fontkit.openSync(fonts.ext[i]);
 		let scaleMultiple = baseUnitsPerEm/extFont.unitsPerEm;
-		for(let i=0; i<missingUnicode.length; i++) {
-			if(maxGlyphNum==0) break;
-			if(missingUnicode[i]==null) continue;
+		for (let i=0; i<missingUnicode.length; i++) {
+			if (maxGlyphNum==0) break;
+			if (missingUnicode[i]==null) continue;
 			let unicodeStr = missingUnicode[i].toString(16).toUpperCase();
-			if(extFont.hasGlyphForCodePoint(missingUnicode[i])) {
+			if (extFont.hasGlyphForCodePoint(missingUnicode[i])) {
 				let glyph = extFont.glyphForCodePoint(missingUnicode[i]);
 				let adjusted = pathUtil(glyph.path.toSVG()).scale(scaleMultiple,scaleMultiple);
-				if(extFont.unitsPerEm===glyph.advanceWidth) {
+				if (extFont.unitsPerEm===glyph.advanceWidth) {
 					svgString = svgString.concat(`<glyph glyph-name="&#x${unicodeStr};" unicode="&#x${unicodeStr};" d="${adjusted}" />\n`);
 				} else {
 					svgString = svgString.concat(`<glyph glyph-name="&#x${unicodeStr};" unicode="&#x${unicodeStr};" d="${adjusted}" horiz-adv-x="${glyph.advanceWidth*scaleMultiple}"/>\n`);
@@ -273,25 +302,43 @@ if(fonts.ext.length>0 && missingUnicode.length>0) {
 
 console.log('adjustive begin ......');
 
-for(let i=0; i<fonts.adjustive.length; i++) {
+for (let i=0; i<fonts.adjustive.length; i++) {
 	let adjustFont = fontkit.openSync(fonts.adjustive[i].fontName);
 	let scaleMultiple =baseUnitsPerEm / adjustFont.unitsPerEm;
-	for(let o of fonts.adjustive[i].chars) {
+	for (let o of fonts.adjustive[i].chars) {
 		let unicode = o.codePointAt(0);
 		let unicodeStr = unicode.toString(16).toUpperCase();
-		if(adjustFont.hasGlyphForCodePoint(unicode)) {
+		if (adjustFont.hasGlyphForCodePoint(unicode)) {
 			let glyph = adjustFont.glyphForCodePoint(unicode);
 			let adjusted = pathUtil(glyph.path.toSVG()).scale(scaleMultiple,scaleMultiple);
+			/*//變換的效果不理想，最好找合適的，比如 Anonymous_Pro.ttf 可以直接復製過去
+			if (!Number.isNaN(fonts.adjustive[i].horizAdvX) && (fonts.adjustive[i].horizAdvX != undefined)) {
+				let [left, top, right, bottom] = svgPathBounds(glyph.path.toSVG());
+				console.log(left, top, right, bottom);
+				adjusted = pathUtil(glyph.path.toSVG()).scale(
+//					fonts.adjustive[i].horizAdvX / (right-left),
+//					baseUnitsPerEm / (right-left)
+					fonts.adjustive[i].horizAdvX / adjustFont.unitsPerEm,
+					baseUnitsPerEm / adjustFont.unitsPerEm
+					);
+			}
+			//*/
 			let newSvg = '';
-			if(adjustFont.unitsPerEm===glyph.advanceWidth) {
+			if (adjustFont.unitsPerEm===glyph.advanceWidth) {
 				newSvg = `<glyph glyph-name="&#x${unicodeStr};" unicode="&#x${unicodeStr};" d="${adjusted}" />\n`;
-			} else {
+			}
+			//*
+			else if (!Number.isNaN(fonts.adjustive[i].horizAdvX) && (fonts.adjustive[i].horizAdvX != undefined)) {
+				newSvg = `<glyph glyph-name="&#x${unicodeStr};" unicode="&#x${unicodeStr};" d="${adjusted}" horiz-adv-x="${fonts.adjustive[i].horizAdvX}"/>\n`;
+			}
+			//*/
+			else {
 				newSvg = `<glyph glyph-name="&#x${unicodeStr};" unicode="&#x${unicodeStr};" d="${adjusted}" horiz-adv-x="${glyph.advanceWidth*scaleMultiple}"/>\n`;
 			}
 
 			let pattern = `<glyph[^/>]+unicode="&#x${unicodeStr};"[^/>]+/>\n`;
 			let regexp = new RegExp(pattern, 'g');
-			if(svgString.match(regexp)!=null) {
+			if (svgString.match(regexp)!=null) {
 				svgString = svgString.replace(regexp, newSvg);
 			} else {
 				svgString = svgString.concat(newSvg);
@@ -303,27 +350,27 @@ for(let i=0; i<fonts.adjustive.length; i++) {
 
 console.log('alternative begin ......');
 
-for(let i=0; i<fonts.alternative.length; i++) {
+for (let i=0; i<fonts.alternative.length; i++) {
 	let ooFrom = [];
 	let ooTo = [];
-	for(let o of fonts.alternative[i].charsFrom) ooFrom.push(o);
-	for(let o of fonts.alternative[i].charsTo) ooTo.push(o);
-	if(ooFrom.length!=ooTo.length) {
+	for (let o of fonts.alternative[i].charsFrom) ooFrom.push(o);
+	for (let o of fonts.alternative[i].charsTo) ooTo.push(o);
+	if (ooFrom.length!=ooTo.length) {
 		continue;
 	}
 	let adjustFont = fontkit.openSync(fonts.alternative[i].fontName);
 	let scaleMultiple =baseUnitsPerEm / adjustFont.unitsPerEm;
-	for(let j=0; j<ooFrom.length; j++) {
+	for (let j=0; j<ooFrom.length; j++) {
 		let unicode = ooFrom[j].codePointAt(0);
 		let unicodeStr = ooTo[j].codePointAt(0).toString(16).toUpperCase();
-		if(adjustFont.hasGlyphForCodePoint(unicode)) {
+		if (adjustFont.hasGlyphForCodePoint(unicode)) {
 			let glyph = adjustFont.glyphForCodePoint(unicode);
 			let adjusted = pathUtil(glyph.path.toSVG()).scale(scaleMultiple,scaleMultiple);
-			if(fonts.alternative[i].rotate!=0) adjusted = pathUtil(adjusted).rotate(fonts.alternative[i].rotate);
-			if(fonts.alternative[i].mirrorX==true) adjusted = matrixMirrorX(adjusted.toString());
-			if(fonts.alternative[i].mirrorY==true) adjusted = matrixMirrorY(adjusted.toString());
+			if (fonts.alternative[i].rotate!=0) adjusted = pathUtil(adjusted).rotate(fonts.alternative[i].rotate);
+			if (fonts.alternative[i].mirrorX==true) adjusted = matrixMirrorX(adjusted.toString());
+			if (fonts.alternative[i].mirrorY==true) adjusted = matrixMirrorY(adjusted.toString());
 			let newSvg = '';
-			if(adjustFont.unitsPerEm===glyph.advanceWidth) {
+			if (adjustFont.unitsPerEm===glyph.advanceWidth) {
 				newSvg = `<glyph glyph-name="&#x${unicodeStr};" unicode="&#x${unicodeStr};" d="${adjusted}" />\n`;
 			} else {
 				newSvg = `<glyph glyph-name="&#x${unicodeStr};" unicode="&#x${unicodeStr};" d="${adjusted}" horiz-adv-x="${glyph.advanceWidth*scaleMultiple}"/>\n`;
@@ -331,7 +378,7 @@ for(let i=0; i<fonts.alternative.length; i++) {
 
 			let pattern = `<glyph[^/>]+unicode="&#x${unicodeStr};"[^/>]+/>\n`;
 			let regexp = new RegExp(pattern, 'g');
-			if(svgString.match(regexp)!=null) {
+			if (svgString.match(regexp)!=null) {
 				svgString = svgString.replace(regexp, newSvg);
 			} else {
 				svgString = svgString.concat(newSvg);
