@@ -10,6 +10,27 @@
  * 或用 fontforge 打開 .svg 文件生成 .ttf 字體就行了
  */
 
+
+/*
+
+第五個中文開始就對不齊了
+mmmmmmmmmmmm
+半角中文對齊半角中文對齊
+MMMMMMMMMMMM
+半角中文對齊半角中文對齊
+WWWWWWWWWWWW
+半角中文對齊半角中文對齊
+wwwwwwwwwwww
+半角中文對齊半角中文對齊
+000000000000
+	縮進縮進
+    空格空格
+999988776655
+wwwwwwwwwwww
+WWWWWWWWWWWW
+
+ */
+
 const fontkit = require('fontkit');
 const fs = require('fs');
 const pathUtil = require('svgpath');
@@ -18,6 +39,7 @@ const svgPathBounds = require('svg-path-bounds');
 
 //let defFontName = 'I.MingCREATXR';
 let defFontName = 'CREATXR_MING_MONO_思文明體等寬';
+defFontName = 'CREATXR_MING_思文明體';
 let defFontVersion = '701';  //i.ming + tlwg mono
 let maxGlyphNum = 65533;  //字形總數不能超過 65535 需減去自行增加的字形數
 
@@ -60,75 +82,102 @@ let ranges = [
 /**
  * config your fonts here
  */
-let FontCreatxrOld = '/media/creatxr/DATAL/SOFTS/fonts/I.MingCREATXR_700.ttf';
-let FontMing = '/media/creatxr/DATAL/SOFTS/fonts/I.MingCP-7.01.ttf';
-let FontHanaMinA = '/media/creatxr/DATAL/SOFTS/fonts/HanaMinA.ttf';
-let FontHanaMinB = '/media/creatxr/DATAL/SOFTS/fonts/HanaMinB.ttf';
-let FontKaiXinSong = '/media/creatxr/DATAL/SOFTS/fonts/KaiXinSong.ttf';
+let fontCreatxrOld = '/media/creatxr/DATAL/SOFTS/fonts/I.MingCREATXR_700.ttf';
+let fontMing = '/media/creatxr/DATAL/SOFTS/fonts/I.MingCP-7.01.ttf';
+let fontHanaMinA = '/media/creatxr/DATAL/SOFTS/fonts/HanaMinA.ttf';
+let fontHanaMinB = '/media/creatxr/DATAL/SOFTS/fonts/HanaMinB.ttf';
+let fontKaiXinSong = '/media/creatxr/DATAL/SOFTS/fonts/KaiXinSong.ttf';
 // TlwgMono.ttf 還是差些意思：不是黑體，兩字母不等寬於一全角漢字，需要作個轉換
 //或找個合適的字體，比如 Anonymous_Pro.ttf 直接設一個屬性 horiz-adv-x
-let FontMono = '/usr/share/fonts/truetype/tlwg/TlwgMono.ttf';
-//FontMono = '/usr/share/fonts/truetype/tlwg/TlwgMono-Bold.ttf';
-//FontMono = '/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf';
-//FontMono = FontCreatxrOld;
-FontMono = '/media/creatxr/DATAL/SOFTS/fonts/Anonymous-Pro/Anonymous_Pro.ttf';
+/** 這個較好 https://www.theleagueofmoveabletype.com/league-mono 等寬的字體要粗些，否則顯得太疏。*/
+/** fontMonoHorizAdvX 設爲 0 則是自適應，非等寬；不設 undefined 或 null 則直接拷 */
+let fontMonoHorizAdvX = 0;
+let fontMono = '/usr/share/fonts/truetype/tlwg/TlwgMono.ttf';
+//fontMono = '/usr/share/fonts/truetype/tlwg/TlwgMono-Bold.ttf';
+//fontMono = '/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf';
+//fontMono = fontCreatxrOld;
+fontMono = '/media/creatxr/DATAL/SOFTS/fonts/Anonymous-Pro/Anonymous_Pro.ttf';
+//再更改則基於這個版本，已作過居中調整的
+fontMono = '/media/creatxr/DATAL/SOFTS/fonts/CREATXR_MING_MONO_701.ttf';
+fontMono = '/usr/share/fonts/truetype/liberation/LiberationSansNarrow-Regular.ttf';
+fontMono = '/media/creatxr/WORK/DEV/webapp.bak/fonts/segoeuil.ttf';  //for min space
+fontMono = '/media/creatxr/DATAL/SOFTS/fonts/nk57-monospace/nk57-monospace-sc-lt.ttf';
+fontMono = '/media/creatxr/DATAL/SOFTS/fonts/LeagueMono-2.220/static/TTF/LeagueMono-CondensedLight.ttf';  //for mono space
+fontMono = '/media/creatxr/DATAL/SOFTS/fonts/LeagueMono-2.220/static/TTF/LeagueMono-CondensedThin.ttf';
+fontMono = '/media/creatxr/DATAL/SOFTS/fonts/LeagueMono-2.220/static/TTF/LeagueMono-CondensedUltraLight.ttf'; //for min space
+
 
 
 let fonts = {
-		base: FontMing,
+		base: fontMing,
 		ext: [
-			FontHanaMinA,
-			FontHanaMinB,
-			FontKaiXinSong
+			fontHanaMinA,
+			fontHanaMinB,
+			fontKaiXinSong
 		],  ///maybe require large heap size: node --max-old-space-size=8192 fontCustomize.js
 		adjustive: [
 			{
 				//fontName: '../fonts/HanaMinA.ttf',
-				fontName: FontCreatxrOld,
+				fontName: fontCreatxrOld,
 				//chars: '☉「」『』'
 				chars: '☉'
 			},
 
 			{
 				//fontName: '../fonts/HanaMinA.ttf',
-				fontName: FontCreatxrOld,
+				fontName: fontCreatxrOld,
 				//由於一點明體有1-10與11-50的大小不一，所以更改。
 				//黑底白字的未改❶❷❸❹❺❻❼❽❾❿➊➋➌➍➎➏➐➑➒➓⓫⓬⓭⓮⓯⓰⓱⓲⓳⓴
 				//白底黑字的將➊➋➌➍➎➏➐➑➒➓⓫⓬⓭⓮⓯⓰⓱⓲⓳⓴字體大小統一，小號的不改
 				chars: '➀➁➂➃➄➅➆➇➈➉⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘㉙㉚㉛㉜㉝㉞㉟㊱㊲㊳㊴㊵㊶㊷㊸㊹㊺㊻㊼㊽㊾㊿'
 			},
 
+
 			{
 				//改用等寬字體
 				//fontName: '../fonts/I.MingCREATXR_700.ttf',
-				fontName: FontMono,
+				fontName: fontMono,
+				horizAdvX: fontMonoHorizAdvX,
 				//半角字符源自某種纖細的黑體
 				//空格也要改
-				chars: '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſƒǼǽǾǿȘșȚțˆˇ˘˙˚˛˜˝΄΅ΆΈΉΊΌΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώЁЂЃЄЅІЇЈЉЊЋЌЎЏАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюяёђѓєѕіїјљњћќўџҐґḂḃḊḋḞḟṀṁṖṗṠṡṪṫẀẁẂẃẄẅỲỳ–—―‘’‚“”„†‡•…‰‹›⁄€№™Ω∂∆∏∑−√∞∫≈≠≤≥⌃⌘⌤⌥⌦⍽⎈⏎␣─│┌┐└┘├┤┬┴┼═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬◆◊✓',
-				horizAdvX: 1024
+				//chars: '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſƒǺǻǼǽǾǿȘșȚțˆˇˉ˘˙˚˛˜˝;΄΅Ά·ΈΉΊΌΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώЀЁЂЃЄЅІЇЈЉЊЋЌЍЎЏАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюяѐёђѓєѕіїјљњћќѝўџѲѳҐґẀẁẂẃẄẅỲỳ‐‑–—―‗‘’‚‛“”„†‡•…‰′″‹›‼‾⁄ⁿ₣₤₧€℅ℓ№™Ω℮⅛⅜⅝⅞←↑→↓↔↕↨∂∆∏∑−∕∙√∞∟∩∫≈≠≡≤≥⌂⌐⌠⌡─│┌┐└┘├┤┬┴┼═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬▀▄█▌▐░▒▓■□▪▫▬▲►▼◄◊○●◘◙◦☺☻☼♀♂♠♣♥♦♪♫♬ﬁﬂ',
+				chars: '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ'
 			},
+
 /*
 			{
 				//改用等寬字體
 				//fontName: '../fonts/I.MingCREATXR_700.ttf',
-				fontName: FontCreatxrOld,
+				fontName: fontMono,
+				//半角字符源自某種纖細的黑體
+				//空格也要改
+				chars: '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſƒǼǽǾǿȘșȚțˆˇ˘˙˚˛˜˝΄΅ΆΈΉΊΌΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώЁЂЃЄЅІЇЈЉЊЋЌЎЏАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюяёђѓєѕіїјљњћќўџҐґḂḃḊḋḞḟṀṁṖṗṠṡṪṫẀẁẂẃẄẅỲỳ–—―‘’‚“”„†‡•…‰‹›⁄€№™Ω∂∆∏∑−√∞∫≈≠≤≥⌃⌘⌤⌥⌦⍽⎈⏎␣─│┌┐└┘├┤┬┴┼═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬◆◊✓',
+				//horizAdvX: 1024
+				//horizAdvX: 0
+			},
+			//*/
+/*
+			{
+				//改用等寬字體
+				//fontName: '../fonts/I.MingCREATXR_700.ttf',
+				fontName: fontCreatxrOld,
 				chars: '0123456789`~!@#$%^&*{}[]()_+=-.,:;?<>|/\'\\ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
 				//horizAdvX: 1024  //如果需要等寬，則在這設定寬度
 			},
 //*/
 			{
-				fontName: FontCreatxrOld,
+				fontName: fontCreatxrOld,
 				//源自開心宋體
 				chars: '﹐﹑﹔﹕﹖﹗﹙﹚﹛﹜﹝﹞﹟﹠﹡﹢﹣﹤﹥﹦﹨﹩﹪﹫'
 			},
 
 			{
-				fontName: FontCreatxrOld,
+				fontName: fontCreatxrOld,
 				chars: '。，、。；：？！（）｛｝〔〕＃＆＊＋－＜＞＝＼＄％＠《》〈〉／［］「」『』‘’“”气磙碌'
 			},
 
 			{
-				fontName: FontCreatxrOld,
+				fontName: fontCreatxrOld,
 				chars: '◯☯⚊⚋⚌⚍⚎⚏☰☱☲☳☴☵☶☷䷀䷁䷂䷃䷄䷅䷆䷇䷈䷉䷊䷋䷌䷍䷎䷏䷐䷑䷒䷓䷔䷕䷖䷗䷘䷙䷚䷛䷜䷝䷞䷟䷠䷡䷢䷣䷤䷥䷦䷧䷨䷩䷪䷫䷬䷭䷮䷯䷰䷱䷲䷳䷴䷵䷶䷷䷸䷹䷺䷻䷼䷽䷾䷿𝌀𝌁𝌂𝌃𝌄𝌅𝌆𝌇𝌈𝌉𝌊𝌋𝌌𝌍𝌎𝌏𝌐𝌑𝌒𝌓𝌔𝌕𝌖𝌗𝌘𝌙𝌚𝌛𝌜𝌝𝌞𝌟𝌠𝌡𝌢𝌣𝌤𝌥𝌦𝌧𝌨𝌩𝌪𝌫𝌬𝌭𝌮𝌯𝌰𝌱𝌲𝌳𝌴𝌵𝌶𝌷𝌸𝌹𝌺𝌻𝌼𝌽𝌾𝌿𝍀𝍁𝍂𝍃𝍄𝍅𝍆𝍇𝍈𝍉𝍊𝍋𝍌𝍍𝍎𝍏𝍐𝍑𝍒𝍓𝍔𝍕𝍖○ㄨ礻㗰𠳝'
 				//'◯☯⚊⚋⚌⚍⚎⚏☰☱☲☳☴☵☶☷䷀䷁䷂䷃䷄䷅䷆䷇䷈䷉䷊䷋䷌䷍䷎䷏䷐䷑䷒䷓䷔䷕䷖䷗䷘䷙䷚䷛䷜䷝䷞䷟䷠䷡䷢䷣䷤䷥䷦䷧䷨䷩䷪䷫䷬䷭䷮䷯䷰䷱䷲䷳䷴䷵䷶䷷䷸䷹䷺䷻䷼䷽䷾䷿𝌀𝌁𝌂𝌃𝌄𝌅𝌆𝌇𝌈𝌉𝌊𝌋𝌌𝌍𝌎𝌏𝌐𝌑𝌒𝌓𝌔𝌕𝌖𝌗𝌘𝌙𝌚𝌛𝌜𝌝𝌞𝌟𝌠𝌡𝌢𝌣𝌤𝌥𝌦𝌧𝌨𝌩𝌪𝌫𝌬𝌭𝌮𝌯𝌰𝌱𝌲𝌳𝌴𝌵𝌶𝌷𝌸𝌹𝌺𝌻𝌼𝌽𝌾𝌿𝍀𝍁𝍂𝍃𝍄𝍅𝍆𝍇𝍈𝍉𝍊𝍋𝍌𝍍𝍎𝍏𝍐𝍑𝍒𝍓𝍔𝍕𝍖○ㄨ
 			},
@@ -141,7 +190,7 @@ let fonts = {
 
 			//*
 			{
-				fontName: FontCreatxrOld,
+				fontName: fontCreatxrOld,
 				//chars: '旣卽' // 源自開心宋體
 				chars: ''  //「」字，在 ctext.org 中檢測爲自定義字符，當用「䥇」
 			}
@@ -150,7 +199,7 @@ let fonts = {
 		alternative: [
 			{
 				//fontName: '/media/creatxr/DATAL/SOFTS/fonts/KaiXinSong.ttf',
-				fontName: FontKaiXinSong,
+				fontName: fontKaiXinSong,
 				charsFrom: '﹨',
 				charsTo: '／',
 				rotate: 0,
@@ -159,7 +208,7 @@ let fonts = {
 			}  /*,
 
 			{
-				fontName: FontKaiXinSong,
+				fontName: fontKaiXinSong,
 				charsFrom: '﹤﹥',
 				charsTo: '＜＞',
 				rotate: 0,
@@ -192,6 +241,7 @@ function matrixMirrorY(d) {
 }
 
 //三半角等於兩全角，或二半角等於一全角，卽可對齊中文與字母，或直接設一個屬性 horiz-adv-x
+//效果不好
 function matrixScaleWidth(d, percent) {
 	let [left, top, right, bottom] = svgPathBounds(d);
 	return pathUtil(d).scale(percent,1).rel().round(3).toString();  ///TODO:
@@ -328,8 +378,14 @@ for (let i=0; i<fonts.adjustive.length; i++) {
 				newSvg = `<glyph glyph-name="&#x${unicodeStr};" unicode="&#x${unicodeStr};" d="${adjusted}" />\n`;
 			}
 			//*
-			else if (!Number.isNaN(fonts.adjustive[i].horizAdvX) && (fonts.adjustive[i].horizAdvX != undefined)) {
-				newSvg = `<glyph glyph-name="&#x${unicodeStr};" unicode="&#x${unicodeStr};" d="${adjusted}" horiz-adv-x="${fonts.adjustive[i].horizAdvX}"/>\n`;
+			else if (!Number.isNaN(fonts.adjustive[i].horizAdvX) && (fonts.adjustive[i].horizAdvX != undefined) && (fonts.adjustive[i].horizAdvX != null)) {
+				if (fonts.adjustive[i].horizAdvX > 0 ) {
+					newSvg = `<glyph glyph-name="&#x${unicodeStr};" unicode="&#x${unicodeStr};" d="${adjusted}" horiz-adv-x="${fonts.adjustive[i].horizAdvX}"/>\n`;
+				} else {
+					console.log(adjusted);
+					let [left, top, right, bottom] = svgPathBounds(adjusted.toString());
+					newSvg = `<glyph glyph-name="&#x${unicodeStr};" unicode="&#x${unicodeStr};" d="${adjusted}" horiz-adv-x="${right-left+200}"/>\n`;
+				}
 			}
 			//*/
 			else {
