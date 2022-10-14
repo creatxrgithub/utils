@@ -40,7 +40,7 @@ let outputDir = '/home/creatxr/Documents';
 
 let unitsPerEmBase = 2048;
 let isMonoFont = true;
-let fontMonoHorizAdvX = isMonoFont ? unitsPerEmBase/2 : 0;  //漢字寬的一半 1024 或 自適應 0
+//let unitsPerEmBaseHalf = isMonoFont ? unitsPerEmBase/2 : 0;  //漢字寬的一半 1024 或 自適應 0
 //'CREATXR_MING_MONO_思文明體等寬' : 'CREATXR_MING_思文明體'
 /**
  * @defFontName: a ASCII string without whitespace characters and less than 64 chars
@@ -98,7 +98,6 @@ let fontHanaMinB = '/media/creatxr/DATAL/SOFTS/fonts/HanaMinB.ttf';
 let fontKaiXinSong = '/media/creatxr/DATAL/SOFTS/fonts/KaiXinSong.ttf';
 let fontNumAlphabet = '/media/creatxr/WORK/DEV/webapp.bak/fonts/segoeuil.ttf';  //for min space
 /** 這個較好 https://www.theleagueofmoveabletype.com/league-mono 等寬的字體要粗些，否則顯得太疏。*/
-/** fontMonoHorizAdvX 設爲 0 則是自適應，非等寬；不設 undefined 或 null 則直接拷 *///TODO: 設爲０時，Combining Diacritical Marks 的提取應該有誤
 /** 通過放縮得來的數字及字母效果不好，所以選了個不用放縮的字體。 */
 let fontMono = '/media/creatxr/DATAL/SOFTS/fonts/LeagueMono-2.220/static/TTF/LeagueMono-CondensedUltraLight.ttf';
 fontMono = '/media/creatxr/DATAL/SOFTS/fonts/LeagueMono-2.220/static/TTF/LeagueMono-CondensedThin.ttf';
@@ -118,7 +117,7 @@ fontCombiningMarks = fontMing;
  *   [
  *     {
  *       fontName: string,
- *       horizAdvX: integer or null or undefined, e.g. 2048/2 for ascii number
+ *       get horizAdvX () => {return val} : null or undefined or property of integer , e.g. 2048/2 for ascii number
  *       chars: property or value of a string or char's array, e.g. get chars() { return string }
  *     }
  *   ],
@@ -166,6 +165,7 @@ let fonts = {
 		 * @chars: iterable collection of chars: string, array of chars, readable propery of strings or array
 		 * @horizAdvX:
 		 *     >0: set rounded up integer multiphles of mono width of glyph; 向上取整數倍的半角寬度 Math.ceil()
+		 *         property to dynamic calcute width
 		 *     <0: auto set real width of glyph;
 		 *     =0: set glyph's width 0
 		 */
@@ -190,7 +190,10 @@ let fonts = {
 			//改用等寬字體
 			//fontName: fontMono,
 			fontName: fontCreatxrOld,
-			horizAdvX: isMonoFont ? fontMonoHorizAdvX : -1,  //set a value of <0 to auto calculate glyph's width
+			//horizAdvX: isMonoFont ? unitsPerEmBaseHalf : -1,  //set a value of <0 to auto calculate glyph's width
+			get horizAdvX() {
+				return isMonoFont ? unitsPerEmBase/2 : -1
+			},
 			//半角字符源自某種纖細的黑體
 			//空格也要改
 			//chars: '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſƒǺǻǼǽǾǿȘșȚțˆˇˉ˘˙˚˛˜˝;΄΅Ά·ΈΉΊΌΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώЀЁЂЃЄЅІЇЈЉЊЋЌЍЎЏАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюяѐёђѓєѕіїјљњћќѝўџѲѳҐґẀẁẂẃẄẅỲỳ‐‑–—―‗‘’‚‛“”„†‡•…‰′″‹›‼‾⁄ⁿ₣₤₧€℅ℓ№™Ω℮⅛⅜⅝⅞←↑→↓↔↕↨∂∆∏∑−∕∙√∞∟∩∫≈≠≡≤≥⌂⌐⌠⌡─│┌┐└┘├┤┬┴┼═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬▀▄█▌▐░▒▓■□▪▫▬▲►▼◄◊○●◘◙◦☺☻☼♀♂♠♣♥♦♪♫♬ﬁﬂ',
@@ -240,7 +243,11 @@ let fonts = {
 			//Musical Symbols'range 0x1D000~0x1D1FF
 			//fontName: '/media/creatxr/DATAL/SOFTS/fonts/NotoMusic-Regular.ttf',
 			fontName: '/home/creatxr/Documents/CREATXR_MING_MONO_COMUSIC.ttf',
-			horizAdvX: fontMonoHorizAdvX,  //1024
+			//horizAdvX: unitsPerEmBaseHalf,  //1024
+			//由於在後邊 unitsPerEmBase 有重新賦値，可能導致 unitsPerEmBaseHalf 在配置中的值不適當應當動態計算
+			get horizAdvX() {
+				return unitsPerEmBase/2;
+			},
 			get chars() {
 				let ret = ''
 				ret += String.fromCodePoint(0x25CC);  //dotted circle
@@ -507,11 +514,11 @@ for (let i=0; i<fonts.adjustive.length; i++) {
 			/*
 			if (horizAdvXAdjusted != adjustFont.unitsPerEm) {
 				let [left, top, right, bottom] = svgPathBounds(glyph.path.toSVG());
-				horizAdvXAdjusted = fontMonoHorizAdvX * Math.ceil((right-left)/(adjustFont.unitsPerEm/2));
+				horizAdvXAdjusted = (unitsPerEmBase/2) * Math.ceil((right-left)/(adjustFont.unitsPerEm/2));
 			}
 			*/
 			let [left, top, right, bottom] = svgPathBounds(glyph.path.toSVG());
-			let  horizAdvXRecommaned = fontMonoHorizAdvX * Math.ceil((right-left)/(adjustFont.unitsPerEm/2));
+			let  horizAdvXRecommaned = (unitsPerEmBase/2) * Math.ceil((right-left)/(adjustFont.unitsPerEm/2));
 			if (horizAdvXRecommaned > horizAdvXAdjusted) {
 				horizAdvXAdjusted = horizAdvXRecommaned;
 			}
