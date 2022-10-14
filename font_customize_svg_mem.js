@@ -16,7 +16,7 @@
  * 勾選後生成字體就可以了
  */
 
-
+let isATest = false;
 
 const fontkit = require('fontkit');
 const fs = require('fs');
@@ -82,7 +82,7 @@ let ranges = [
 
 ];
 
-//ranges = [ {start:0x3007, end:0x3007} ];  //only for test use
+if (isATest) ranges = [ {start:0x3007, end:0x3007} ];  //only for test use
 
 
 
@@ -564,7 +564,7 @@ for (let i=0; i<fonts.alternative.length; i++) {
 			if (glyph.path.toSVG().trim() === '') continue;
 			//some glyphs have a zero length string, will cause error in next step. eg. scale
 			let adjusted = pathUtil(glyph.path.toSVG()).scale(scaleMultiple,scaleMultiple);
-			if (!Math.isNaN(fonts.alternative[i]?.rotate) && fonts.alternative[i]?.rotate!=0) adjusted = pathUtil(adjusted).rotate(fonts.alternative[i].rotate);
+			if (!Number.isNaN(fonts.alternative[i]?.rotate) && fonts.alternative[i]?.rotate!=0) adjusted = pathUtil(adjusted).rotate(fonts.alternative[i].rotate);
 			if (fonts.alternative[i]?.mirrorX==true) adjusted = matrixMirrorX(adjusted.toString());
 			if (fonts.alternative[i]?.mirrorY==true) adjusted = matrixMirrorY(adjusted.toString());
 			let newSvg = '';
