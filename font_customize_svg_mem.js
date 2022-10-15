@@ -11,12 +11,14 @@
  *
  * 等寬字體都是居中顯示，可以在 fontforge 中作一次性調整
  *
- * 有時不知什麼原因（比如這次添加音樂符號）會造成行間距變得極大
+ * 有時會造成行間距變得極大（比如添加音樂符號）
  * 這樣，打開 fontforge 在 menu -> element -> font info -> os/2 -> metrics -> really use typo metrics
- * 勾選後生成字體就可以了
+ * 勾選後生成字體就可以了。
+ * 但是，這樣會造成音樂符號無法正常完全顯示，豎直的空間不夠。
  */
 
 let isATest = false;
+let isDebugOn = false;
 
 const fontkit = require('fontkit');
 const fs = require('fs');
@@ -26,7 +28,6 @@ const svgPathBounds = require('svg-path-bounds');
 
 
 const util = require('util');
-let isDebugOn = true;
 console.blink = function() { this._stdout.write('\x1b[5m' + util.format.apply(this, arguments) + '\x1b[0m\n'); }; //blink
 console.debug = function() { this._stdout.write('\x1b[35m' + util.format.apply(this, arguments) + '\x1b[0m\n'); }; //magenta
 console.info = function() { this._stdout.write('\x1b[36m' + util.format.apply(this, arguments) + '\x1b[0m\n'); }; //cyan
@@ -46,6 +47,7 @@ let isMonoFont = true;
  * @defFontName: a ASCII string without whitespace characters and less than 64 chars
  */
 let defFontName = isMonoFont ? 'CREATXR_MING_MONO_COMUSIC' : 'CREATXR_MING'  ;
+if (isATest) defFontName = 'CREATXR_TEST';
 let defFontVersion = '800';  //i.ming + tlwg mono
 let maxGlyphNum = 65533;  //字形總數不能超過 65535 需減去自行增加的字形數
 //maxGlyphNum = 65000;
@@ -83,14 +85,15 @@ let ranges = [
 ];
 
 if (isATest) ranges = [ {start:0x3007, end:0x3007} ];  //only for test use
+//if (isATest) ranges = [ {start:33, end:255} ];  //only for test use
 
 
 
 /**
  * config your fonts here
  */
-let fontCreatxrOldMono = '/media/creatxr/DATAL/SOFTS/fonts/CREATXR_MING_MONO_701_LeagueMono-CondensedLight.ttf';
-let fontCreatxrOldRegular = '/media/creatxr/DATAL/SOFTS/fonts/CREATXR_MING_701_segoeuil.ttf';
+let fontCreatxrOldMono = '/media/creatxr/DATAL/SOFTS/fonts/CREATXR/CREATXR_MING_MONO_701_LeagueMono-CondensedLight.ttf';
+let fontCreatxrOldRegular = '/media/creatxr/DATAL/SOFTS/fonts/CREATXR/CREATXR_MING_701_segoeuil.ttf';
 let fontCreatxrOld = isMonoFont ? fontCreatxrOldMono : fontCreatxrOldRegular;
 let fontMing = '/media/creatxr/DATAL/SOFTS/fonts/I.MingCP-8.00.ttf';
 let fontHanaMinA = '/media/creatxr/DATAL/SOFTS/fonts/HanaMinA.ttf';
@@ -239,7 +242,11 @@ let fonts = {
 		},
 		//*/
 
+//*
 		{
+			//字形太高了，爲保證完全顯示，需設：
+			//ascent="1624" descent="-424" underline-position="-250" underline-thickness="200"
+			//故另建一字體文件。
 			//Musical Symbols'range 0x1D000~0x1D1FF
 			//fontName: '/media/creatxr/DATAL/SOFTS/fonts/NotoMusic-Regular.ttf',
 			fontName: '/home/creatxr/Documents/CREATXR_MING_MONO_COMUSIC.ttf',
@@ -247,6 +254,9 @@ let fonts = {
 			//由於在後邊 unitsPerEmBase 有重新賦値，可能導致 unitsPerEmBaseHalf 在配置中的值不適當應當動態計算
 			get horizAdvX() {
 				return unitsPerEmBase/2;
+			},
+			get vertAdvY() {  //卽使不設行間距也會自動變大
+				return Math.ceil(unitsPerEmBase*1.25);
 			},
 			get chars() {
 				let ret = ''
@@ -256,6 +266,7 @@ let fonts = {
 				return ret;
 			}
 		},
+//*/
 
 		//*
 		{
@@ -500,6 +511,7 @@ for (let i=0; i<fonts.adjustive.length; i++) {
 				else 配置中預設的寬度大於零 then
 					新字形 = <glyph glyph-name="unicode" unicode="unicode" d="新字形的輪廓" horiz-adv-x="配置中的寬度" />
 		 */
+		let [left, top, right, bottom] = svgPathBounds(glyph.path.toSVG());
 		let adjusted = pathUtil(glyph.path.toSVG()).scale(scaleMultiple, scaleMultiple);
 		//字母數字轉半角寬度的變換的效果不理想，最好找合適的，比如 LeagueMono-CondensedThin.ttf 可以直接復製過去
 		let newSvg = '';
@@ -517,12 +529,15 @@ for (let i=0; i<fonts.adjustive.length; i++) {
 				horizAdvXAdjusted = (unitsPerEmBase/2) * Math.ceil((right-left)/(adjustFont.unitsPerEm/2));
 			}
 			*/
-			let [left, top, right, bottom] = svgPathBounds(glyph.path.toSVG());
 			let  horizAdvXRecommaned = (unitsPerEmBase/2) * Math.ceil((right-left)/(adjustFont.unitsPerEm/2));
 			if (horizAdvXRecommaned > horizAdvXAdjusted) {
 				horizAdvXAdjusted = horizAdvXRecommaned;
 			}
-			newSvg = `<glyph glyph-name="&#x${unicodeStr};" unicode="&#x${unicodeStr};" d="${adjusted}" horiz-adv-x="${horizAdvXAdjusted}"/>\n`;
+			if (fonts.adjustive[i]?.vertAdvY > 0) {  //如果有設置高度
+				newSvg = `<glyph glyph-name="&#x${unicodeStr};" unicode="&#x${unicodeStr};" d="${adjusted}" horiz-adv-x="${horizAdvXAdjusted}" vert-adv-y="${fonts.adjustive[i].vertAdvY}"/>\n`;
+			} else {
+				newSvg = `<glyph glyph-name="&#x${unicodeStr};" unicode="&#x${unicodeStr};" d="${adjusted}" horiz-adv-x="${horizAdvXAdjusted}"/>\n`;
+			}
 		 } else {
 			if (isNullOrUndefined(fonts.adjustive[i].horizAdvX) || Number.isNaN(fonts.adjustive[i].horizAdvX) || fonts.adjustive[i].horizAdvX<0) {
 				let [left, top, right, bottom] = svgPathBounds(adjusted.toString());
