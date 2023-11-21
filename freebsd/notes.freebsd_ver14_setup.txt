@@ -1,0 +1,144 @@
+### to install pkg offline from dvd image
+cdrom='/media/cd9660'
+mkdir -p "${cdrom}"
+ls /dev/da*
+### geom disk list
+### gpart list /dev/da0 | less
+gpart show /dev/da0
+mount - t cd9660 /dev/da0 "${cdrom}"
+### cp config files from cdrom
+repos='/usr/local/etc/pkg/repos'
+mkdir -p "${repos}"
+cp "${cdrom}"/packages/repos/FreeBSD_install_cdrom.conf "${repos}"/
+cp "${cdrom}"/etc/pkg/FreeBSD.conf "${repos}"/
+edit "${repos}"/FreeBSD_install_cdrom.conf 
+### to change cdrom's location in config file
+edit "${repos}"/FreeBSD.conf 
+### to disable remote url
+pkg update
+
+### now you can install pkg from the cdrom
+### after connected to internet, to update/install from remote, it needs
+### to enable remote site in FreeBSD.conf 
+### and move FreeBSD_install_cdrom.conf  from the "repos" folder
+### then run "pkg update"
+
+
+pciconf - lv | grep - A1 - B3 network
+### wifi setup
+# tools: ifconfig, usbconfig, devinfo, pciconf
+# with 54M RTL 802.11 usb wifi card
+kldload rtwn rtwn_usb
+sysctl net.wlan.devices
+### that name "rtwn0" is showed with command line "sysctl net.wlan.devices"
+sysrc wlans_rtwn0="wlan0"
+sysrc ifconfig_wlan0="WPA DHCP"
+
+### cat /etc/rc.conf
+# wlans_rtwn0="wlan0" 
+# ifconfig_wlan0="WPA DHCP"
+
+### /etc/wpa_supplicant.conf
+#network={
+#  ssid="your ssid"
+#  psk="your password"
+#}
+conf_wpa='/etc/wpa_supplicant.conf'
+echo enter ssid:
+read ssid
+echo enter psk:
+read psk
+echo 'network={"' | tee -a ${conf_wpa}
+echo '  ssid="${ssid}' | tee -a ${conf_wpa}
+echo '  psk="${psk}' | tee -a ${conf_wpa}
+echo '}' | tee -a ${conf_wpa}
+service netif restart
+
+
+
+
+### gpu setting: nvidia + intel
+pkg install nvidia-hybrid-graphics drm-kmod xf86-video-intel
+sysrc kld_list+=linux
+sysrc kld_list+=nvidia-modeset
+sysrc kld_list+=i915kms
+sysrc linux_enable=yes
+sysrc dbus_enable=yes
+sysrc hald_enable=yes
+service nvidia_xorg start
+### cat /etc/rc.conf
+# kld_list="linux nvidia-modeset i915kms"
+# linux_enable="yes"
+# dbus_enable="yes"
+# hald_enable="yes"# nvidia_xorg_enable="yes"
+
+pciconf -lv | grep -A 4 vgapci
+echo "enter nvidia card's busid: (e.g. PCI:1:0:0)"
+read busid_nvidia
+echo "enter intel card's busid: (e.g. PCI:0:2:0)"
+read busid_intel
+### set nvidia card's driver with 'nvidia' and intel card's driver with 'modesetting'
+### set screen's device with intel's card's identifier name
+conf_xorg_nvidia='/usr/local/etc/X11/xorg.conf.d/driver-nvidia.conf'
+echo 'Section "Device"' | tee -a ${conf_xorg_nvidia}
+echo '  Identifier "Card1"' | tee -a ${conf_xorg_nvidia}
+echo '  VendorName "NVIDIA Corporation"' | tee -a ${conf_xorg_nvidia}
+echo '  Driver "nvidia"' | tee -a ${conf_xorg_nvidia}
+echo "  BusID \"${busid_nvidia}\"" | tee -a ${conf_xorg_nvidia}
+echo 'EndSection' | tee -a ${conf_xorg_nvidia}
+echo '' | tee -a ${conf_xorg_nvidia}
+echo 'Section "Device"' | tee -a ${conf_xorg_nvidia}
+echo '  Identifier "Card0"' | tee -a ${conf_xorg_nvidia}
+echo '  VendorName "Intel Corporation"' | tee -a ${conf_xorg_nvidia}
+echo '  Driver "modesetting"' | tee -a ${conf_xorg_nvidia}
+echo "  BusID \"${busid_intel}\"" | tee -a ${conf_xorg_nvidia}
+echo '  Option "DPMS"' | tee -a ${conf_xorg_nvidia}
+echo 'EndSection' | tee -a ${conf_xorg_nvidia}
+echo '' | tee -a ${conf_xorg_nvidia}
+echo 'Section "Screen"' | tee -a ${conf_xorg_nvidia}
+echo '  Identifier "Screen0"' | tee -a ${conf_xorg_nvidia}
+echo '  Device "Card0"' | tee -a ${conf_xorg_nvidia}
+echo 'EndSection' | tee -a ${conf_xorg_nvidia}
+echo '' | tee -a ${conf_xorg_nvidia}
+echo 'Section "Screen"' | tee -a ${conf_xorg_nvidia}
+echo '  Identifier "Screen1"' | tee -a ${conf_xorg_nvidia}
+echo '  Device "Card0"' | tee -a ${conf_xorg_nvidia}
+echo 'EndSection' | tee -a ${conf_xorg_nvidia}
+
+### cat /usr/local/etc/X11/xorg.conf.d/driver-nvidia.conf
+# Section "Device"
+#   Identifier "Card1"
+#   VendorName "NVIDIA Corporation"
+#   Driver "nvidia"
+#   BusID "PCI:1:0:0"
+# EndSection
+#
+# Section "Device"
+#   Identifier "Card0"
+#   VendorName "Intel Corporation"
+#   Driver "modesetting"
+#   BusID "PCI:0:2:0"
+#   Option "DPMS"
+# EndSection
+#
+# Section "Screen"
+#   Identifier "Screen0"
+#   Device "Card0"
+# EndSection
+#
+# Section "Screen"
+#   Identifier "Screen1"
+#   Device "Card0"
+# EndSection
+
+### reboot may required
+
+
+pkg install xfce firefox mesa-demos
+startxfce4
+
+#mount_msdosfs /dev/da0s1 /media/usb#mount -t cd9660 /dev/cd0 /media/cd9660
+#env REPOS_DIR=/dist/packages/repos pkg rquery "%n"
+#env REPOS_DIR=/dist/packages/repos pkg install xorg
+
+
