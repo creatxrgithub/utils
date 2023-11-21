@@ -1,0 +1,39 @@
+### install alpine linux to a specified partition
+
+use a linux live cd to boot
+make partitions with gparted (gpt)
+/dev/sda1 efi
+/dev/sda2 btrfs
+/dev/sda3 btrfs
+/dev/sda4 swap
+and set /dev/sda3 with flag bios_grub with gparted
+boot alpine linux cd
+setup-alpine
+apk add btrfs-progs grub grub-bios
+modprobe btrfs
+mount -t btrfs /dev/sda3 /mnt
+setup-disk -m sys /mnt
+grub-install --boot-directory=/mnt/boot /dev/sda
+now reboot to check that it could boot alpine linux
+
+### setup xfce
+# https://wiki.alpinelinux.org/wiki/Xfce
+# edit /etc/apk/repositories to add repos
+
+## cat /etc/apk/repositories
+##/media/cdrom/apks
+#http://dl-cdn.alpinelinux.org/alpine/v3.18/main
+#http://dl-cdn.alpinelinux.org/alpine/v3.18/community
+
+#then
+apk update
+
+apk add xorg-server
+#run setup-xorg-base is required
+setup-xorg-base
+
+apk add xfce4 xfce4-terminal xfce4-screensaver
+# xfce4-screensaver may also be necessary just for screen locking after inactivity (with no screensaver enabled).
+setup-devd udev
+
+startx
