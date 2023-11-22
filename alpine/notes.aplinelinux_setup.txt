@@ -20,6 +20,7 @@ now reboot to check that it could boot alpine linux
 #grub-mkconfig -o /boot/grub/grub.cfg
 
 
+
 ### setup wifi
 # https://wiki.alpinelinux.org/wiki/Wi-Fi
 ip link
@@ -43,7 +44,7 @@ udhcpc -i wlan0
 apk update
 
 apk add xorg-server
-#run setup-xorg-base is required
+# run setup-xorg-base is required
 setup-xorg-base
 
 apk add xfce4 xfce4-terminal xfce4-screensaver
@@ -51,6 +52,21 @@ apk add xfce4 xfce4-terminal xfce4-screensaver
 setup-devd udev
 
 startx
+
+### the other non-root users that want a graphical environment need the video and input groups:
+# https://wiki.alpinelinux.org/wiki/Setting_up_a_new_user#Creating_a_new_user
+# adduser '<username>' video
+# adduser '<username>' input
+# reboot or re-login may required
+
+adduser creatxr video
+adduser creatxr input
+
+# getent group name_of_group
+# or
+# cat /etc/group | grep video
+# cat /etc/group | grep input
+
 
 
 ### boot freebsd with grub (it's success with vmware, but failed with laptop.)
