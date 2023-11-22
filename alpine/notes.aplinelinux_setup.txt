@@ -19,6 +19,17 @@ now reboot to check that it could boot alpine linux
 ### after modified grub config
 #grub-mkconfig -o /boot/grub/grub.cfg
 
+
+### setup wifi
+# https://wiki.alpinelinux.org/wiki/Wi-Fi
+ip link
+apk add wpa_supplicant
+rc-service wpa_supplicant start
+wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf
+udhcpc -i wlan0
+
+
+
 ### setup xfce
 # https://wiki.alpinelinux.org/wiki/Xfce
 # edit /etc/apk/repositories to add repos
@@ -40,3 +51,13 @@ apk add xfce4 xfce4-terminal xfce4-screensaver
 setup-devd udev
 
 startx
+
+
+### boot freebsd with grub (it's success with vmware, but failed with laptop.)
+#menuentry "freebsd" {
+#    insmod gpart_gpt
+#    insmod ufs2
+#    insmod zfs
+#    set root=(hd0,gpt2)
+#    kfreebsd /boot/loader
+#}
