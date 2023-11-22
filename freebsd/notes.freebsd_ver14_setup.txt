@@ -142,3 +142,23 @@ startxfce4
 #env REPOS_DIR=/dist/packages/repos pkg install xorg
 
 
+
+### boot freebsd with grub
+
+# it's success with vmware, but failed with laptop.
+#menuentry "freebsd" {
+#    insmod gpart_gpt
+#    insmod ufs2
+#    insmod zfs
+#    set root=(hd0,gpt2)
+#    kfreebsd /boot/loader
+#}
+
+
+# it works with my laptop. the (hd0,gpt1) is my EFI partition.
+#menuentry "freebsd_efi"{
+#    insmod part_gpt
+#    insmod zfs
+#    insmod ufs2
+#    chainloader (hd0,gpt1)/EFI/freebsd/loader.efi
+#}
