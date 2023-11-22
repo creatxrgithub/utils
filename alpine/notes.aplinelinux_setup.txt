@@ -16,6 +16,9 @@ setup-disk -m sys /mnt
 grub-install --boot-directory=/mnt/boot /dev/sda
 now reboot to check that it could boot alpine linux
 
+### after modified grub config
+#grub-mkconfig -o /boot/grub/grub.cfg
+
 ### setup xfce
 # https://wiki.alpinelinux.org/wiki/Xfce
 # edit /etc/apk/repositories to add repos
