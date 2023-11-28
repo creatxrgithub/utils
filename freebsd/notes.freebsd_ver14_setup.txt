@@ -109,7 +109,7 @@ echo '  Device "Card0"' | tee -a ${conf_xorg_nvidia}
 echo 'EndSection' | tee -a ${conf_xorg_nvidia}
 echo '' | tee -a ${conf_xorg_nvidia}
 echo 'Section "ServerLayout" | tee -a ${conf_xorg_nvidia}
-echo '  Identifier "layout" | tee -a ${conf_xorg_nvidia}
+echo '  Identifier "dual_video_card_layout" | tee -a ${conf_xorg_nvidia}
 echo '  Screen 0 "Screen0" | tee -a ${conf_xorg_nvidia}
 echo '#  Inactive "Screen1" ### not works | tee -a ${conf_xorg_nvidia}
 echo 'EndSection | tee -a ${conf_xorg_nvidia}
@@ -141,7 +141,7 @@ echo 'EndSection | tee -a ${conf_xorg_nvidia}
 # EndSection
 #
 #Section "ServerLayout"
-#  Identifier "layout"
+#  Identifier "dual_video_card_layout"
 #  Screen 0 "Screen0"
 ##  Inactive "Screen1" ### not works
 #EndSection
